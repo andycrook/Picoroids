@@ -73,7 +73,7 @@ button_hyperspace = machine.Pin(18, machine.Pin.IN, machine.Pin.PULL_DOWN)
 
 AUTOPLAY_MODE = False
 
-
+FAST_MODE = False
 
 
 
@@ -402,22 +402,22 @@ def collision():
             collision =1
       
       # check for collisions on wraparound screen if needed
-    
-        if xx<0 :
-            if check_ship(xx+128,yy):
-                collision =1
-          
-        if yy<0 :
-            if check_ship(xx,yy+64):
-                collision =1
-          
-        if xx>127:
-            if check_ship(xx-128,yy):
-                collision =1
-          
-        if yy>63:
-            if check_ship(xx,yy-64):
-                collision =1
+        if FAST_MODE== False:
+            if xx<0 :
+                if check_ship(xx+128,yy):
+                    collision =1
+            
+            if yy<0 :
+                if check_ship(xx,yy+64):
+                    collision =1
+            
+            if xx>127:
+                if check_ship(xx-128,yy):
+                    collision =1
+            
+            if yy>63:
+                if check_ship(xx,yy-64):
+                    collision =1
 
 
 # let's be clever, we need to draw asteroids first, then the ship, then bullets, then the text so that collisions are
@@ -435,7 +435,7 @@ def fire():
     AUTOPLAY_MODE=False    # firing, so not in demo mode anymore!
     bullets.append(ship_x)
     bullets.append(ship_y)
-    bullets.append(20)   # bullet age
+    bullets.append(bullet_age)   # bullet age
     bullets.append(rotate_x(0,bullet_speed,rotation))    # to be added onto x,y every frame.
     bullets.append(rotate_y(0,bullet_speed,rotation))
 
@@ -490,6 +490,7 @@ waiting =1
 countdown=0
 level =1
 bullet_speed = 4
+bullet_age = 20  # how long a bullet lasts
 
 
 
@@ -594,10 +595,14 @@ while True:
     # score for the game, number of lives and set immunity from collision to 10
     score = 0
     lives = 3
-    immunity = 10
+    level=1
+    immunity = 30
 
     # countdown for hyperspace function. 0 = available
     hyper_countdown=0
+
+    # countdown for firing
+    countdown_fire_top = 5
 
     # initialise 2 asteroids
     # asteroid   type  x    y  x_speed    y_speed  rotation
@@ -608,7 +613,12 @@ while True:
  
 
 
-    
+    oled.fill(0)
+    oled.show()
+    time.sleep(0.5)
+    oled.text("LEVEL 1",35,25)
+    oled.show()
+    time.sleep(2)
 
 
 
@@ -628,7 +638,7 @@ while True:
                     score =0
 
         if button_fire.value() == 1 and countdown ==0:
-            countdown=5                                  # wait until firing again
+            countdown= countdown_fire_top                                 # wait until firing again
             fire()
             score -= 1    # costs a point to fire
             if score < 0:
@@ -704,14 +714,16 @@ while True:
                         yyy= int(asteroid_1_y)+int(rotate_y(asteroid_1[u+2],asteroid_1[u+3],asteroid_1_rot) )
 
                         oled.line(xx, yy,  xxx,yyy ,1)
-                        if (xx<0) or (xxx<0):
-                            oled.line(xx+128, yy,  xxx+128,yyy ,1)
-                        if (yy<0) or (yyy<0):
-                            oled.line(xx, yy+64,  xxx,yyy +64,1)
-                        if (xx>127) or (xxx>127):
-                            oled.line(xx-128, yy,  xxx-128,yyy ,1)
-                        if (yy>63) or (yyy>63):
-                            oled.line(xx, yy-64,  xxx,yyy-64 ,1)
+
+                        if FAST_MODE== False:
+                            if (xx<0) or (xxx<0):
+                                oled.line(xx+128, yy,  xxx+128,yyy ,1)
+                            if (yy<0) or (yyy<0):
+                                oled.line(xx, yy+64,  xxx,yyy +64,1)
+                            if (xx>127) or (xxx>127):
+                                oled.line(xx-128, yy,  xxx-128,yyy ,1)
+                            if (yy>63) or (yyy>63):
+                                oled.line(xx, yy-64,  xxx,yyy-64 ,1)
                         
                    
                     if asteroids[(i*6)] ==2:
@@ -721,14 +733,15 @@ while True:
                         yyy= int(asteroid_1_y)+int(rotate_y(asteroid_2[u+2],asteroid_2[u+3],asteroid_1_rot) )
 
                         oled.line(xx, yy,  xxx,yyy ,1)
-                        if (xx<0) or (xxx<0):
-                            oled.line(xx+128, yy,  xxx+128,yyy ,1)
-                        if (yy<0) or (yyy<0):
-                            oled.line(xx, yy+64,  xxx,yyy +64,1)
-                        if (xx>127) or (xxx>127):
-                            oled.line(xx-128, yy,  xxx-128,yyy ,1)
-                        if (yy>63) or (yyy>63):
-                            oled.line(xx, yy-64,  xxx,yyy-64 ,1)
+                        if FAST_MODE== False:
+                            if (xx<0) or (xxx<0):
+                                oled.line(xx+128, yy,  xxx+128,yyy ,1)
+                            if (yy<0) or (yyy<0):
+                                oled.line(xx, yy+64,  xxx,yyy +64,1)
+                            if (xx>127) or (xxx>127):
+                                oled.line(xx-128, yy,  xxx-128,yyy ,1)
+                            if (yy>63) or (yyy>63):
+                                oled.line(xx, yy-64,  xxx,yyy-64 ,1)
 
                     if asteroids[(i*6)] ==3:
                         xx=int(asteroid_1_x)+int(rotate_x(asteroid_3[u],asteroid_3[u+1],asteroid_1_rot))
@@ -737,14 +750,15 @@ while True:
                         yyy= int(asteroid_1_y)+int(rotate_y(asteroid_3[u+2],asteroid_3[u+3],asteroid_1_rot) )
 
                         oled.line(xx, yy,  xxx,yyy ,1)
-                        if (xx<0) or (xxx<0):
-                            oled.line(xx+128, yy,  xxx+128,yyy ,1)
-                        if (yy<0) or (yyy<0):
-                            oled.line(xx, yy+64,  xxx,yyy +64,1)
-                        if (xx>127) or (xxx>127):
-                            oled.line(xx-128, yy,  xxx-128,yyy ,1)
-                        if (yy>63) or (yyy>63):
-                            oled.line(xx, yy-64,  xxx,yyy-64 ,1)
+                        if FAST_MODE== False:
+                            if (xx<0) or (xxx<0):
+                                oled.line(xx+128, yy,  xxx+128,yyy ,1)
+                            if (yy<0) or (yyy<0):
+                                oled.line(xx, yy+64,  xxx,yyy +64,1)
+                            if (xx>127) or (xxx>127):
+                                oled.line(xx-128, yy,  xxx-128,yyy ,1)
+                            if (yy>63) or (yyy>63):
+                                oled.line(xx, yy-64,  xxx,yyy-64 ,1)
                     
     # end asteroids
 
@@ -974,10 +988,11 @@ while True:
                       
                             bullets[(b*5)+2] = 0  # reduce age to 0
                             break_a =i
+                            break
                     
                     if break_a>=0:
                         break_asteroid(break_a)
-                        score += 25
+                        score += 10
         if len(bullets)>4:
             for b in range(int((len(bullets)/5))):
 
@@ -1026,17 +1041,18 @@ while True:
         
                 oled.line(xx,yy,+xxx,yyy,1)
             
-                if xx<0 or xxx<0:
-                    oled.line(128+xx,yy,128+xxx,yyy,1)
+                if FAST_MODE== False:   # only draw over edges if slow mode is on
+                    if xx<0 or xxx<0:
+                        oled.line(128+xx,yy,128+xxx,yyy,1)
 
-                if yy<0 or yyy<0:
-                    oled.line(xx,64+yy,xxx,64+yyy,1)
+                    if yy<0 or yyy<0:
+                        oled.line(xx,64+yy,xxx,64+yyy,1)
 
-                if xx>127 or xxx>127:
-                    oled.line(xx-128,yy,xxx-128,yyy,1)
+                    if xx>127 or xxx>127:
+                        oled.line(xx-128,yy,xxx-128,yyy,1)
 
-                if yy>63 or yyy>63:
-                    oled.line(xx,yy-64,xxx,yyy-64,1)
+                    if yy>63 or yyy>63:
+                        oled.line(xx,yy-64,xxx,yyy-64,1)
 
 
 
@@ -1046,9 +1062,32 @@ while True:
         # no asteroids left!
 
             level+=1   # increase the level
+            if level>2:
+                FAST_MODE== True   # set fastmode on for higher levels because more asteroids...
+           
+
+            countdown_fire_top +=2   # increase bullet countdown to make it harder
+
+            bullet_age -= 1     # reduce lifetime of bullets, have to get closer
+            if bullet_age<5:
+                bullet_age =5
+
+            slowdown = slowdown * 0.75   # reduce ability to slowdown ship, slides more = harder
+            asteroids=[] # reset asteroids list
+            bullets=[]
+
+            oled.fill(0)
+            oled.show()
+            time.sleep(0.5)
+            oled.text("LEVEL "+str(level),35,25)
+            oled.show()
+            time.sleep(2)
 
             # add new asteroids for new level
-            for ll in range(0,level):
+            level_max = level
+            if level_max>5:
+                level_max = 5
+            for ll in range(0,level_max):
                 new_asteroid()
                 immunity=10
 
@@ -1068,7 +1107,7 @@ while True:
         oled.text(("{:>3}".format(str(score)).replace(" ","0")),102,0)
         oled.text("^^^"[:lives],0,0)
         if hyper_countdown==0:
-            oled.text("X",30,0)
+            oled.text("*",30,0)
 
 
 

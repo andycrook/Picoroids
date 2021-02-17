@@ -47,7 +47,7 @@ WIDTH  = 128                                            # oled display width
 HEIGHT = 64                                             # oled display height
 
 #i2c = I2C(0)                                            # Init I2C using I2C0 defaults, SCL=Pin(GP9), SDA=Pin(GP8), freq=400000
-i2c = I2C(0, scl=Pin(9), sda=Pin(8), freq=1000000)        # default 400000  the increase seems fine, and spees up drawing to the screen. 2000000 also ok
+i2c = I2C(0, scl=Pin(9), sda=Pin(8), freq=2000000)
 # report i2c address for information 
 print("I2C Address      : "+hex(i2c.scan()[0]).upper()) # Display device address
 print("I2C Configuration: "+str(i2c))                   # Display I2C config
@@ -471,6 +471,15 @@ def new_asteroid():
 
 
 
+
+
+
+
+
+
+
+
+
 # init blank bullet list
 
 bullets=[]  
@@ -504,6 +513,9 @@ while True:
         # show splash screen
         oled.fill(0)
         oled.blit(picoroids, 0,0,2) 
+
+        #oled.fill_rect(25, 2, 25, 50, False)
+
         oled.show()
 
         looped+=1
@@ -1142,4 +1154,10 @@ while True:
     waiting =1
 
 
-    
+    # Thanks for playing. Even more for reading to the bottom of the source. You are The One.
+    #
+    # consider donating to andy.crook@gmail.com via paypal. I'm poor and require coffee.
+    #
+    # if you enjoy this game, improve it or build it into a case then let me know :)
+    #
+    # Go no further!

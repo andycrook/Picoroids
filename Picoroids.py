@@ -796,10 +796,12 @@ while True:
 
 
         if AUTOPLAY_MODE==True:
-            if random.randrange(1,3) == 2:
-                if thrust == 0:
-                    thrust += random.randrange(1,4)
-                    thrust_rotation = rotation     ## set thrust rotation to current vector
+            if random.randrange(0,3) == 2:
+                thrust +=.08
+                #thrust += random.randrange(1,4)
+                thrust_rotation = rotation     ## set thrust rotation to current vector
+                accel_x += rotate_x(0,thrust,thrust_rotation)
+                accel_y += rotate_y(0,thrust,thrust_rotation)
 
         if thrust >0:
             thrust -= 0.02

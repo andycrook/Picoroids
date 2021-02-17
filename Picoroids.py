@@ -795,7 +795,7 @@ while True:
 
 
 
-        if AUTOPLAY_MODE==1:
+        if AUTOPLAY_MODE==True:
             if random.randrange(1,3) == 2:
                 if thrust == 0:
                     thrust += random.randrange(1,4)

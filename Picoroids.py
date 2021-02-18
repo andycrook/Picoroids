@@ -1054,8 +1054,8 @@ while True:
 
                 # check for alien collision
                 if  alien_ON == True:
-                    alien_dist_x = abs(bullet_x-alien_x)
-                    alien_dist_y = abs(bullet_y-alien_y)
+                    alien_dist_x = abs(bullet_x-alien_x+8)
+                    alien_dist_y = abs(bullet_y-alien_y+4)
                     if alien_dist_x<10 and alien_dist_y<10:
                         alien_ON = False
                         score+=50

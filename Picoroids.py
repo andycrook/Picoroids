@@ -30,7 +30,7 @@
 # The game has an autoplay mode to show the features of the game without
 # wiring up buttons, but 5 buttons are recommended to actually play the game
 # 
-# press fire to start
+# press fire to start 
 #
 # main screen shows lives left, hyperspace available and the score
 #   

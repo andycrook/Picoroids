@@ -222,18 +222,57 @@ gameover = bytearray(b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\
 
 
 
+astro8 = bytearray(b"\x18\
+\x64\
+\xc3\
+\x81\
+\x81\
+\x41\
+\x22\
+\x3c")
+
+
+astro6 = bytearray(b"\x00\
+\x18\
+\x34\
+\x52\
+\x5a\
+\x26\
+\x18\
+\x00")
+
+astro4 = bytearray(b"\x00\
+\x00\
+\x18\
+\x34\
+\x24\
+\x18\
+\x00\
+\x00")
+
+
+
+alien = bytearray(b"\x0f\xf0\
+\x10\x08\
+\x32\x4c\
+\xff\xff\
+\xc9\x93\
+\x7f\xfe\
+\x30\x0c\
+\x1f\xf8")
 
 
 
 
 
-
-
-# setup the two images in framebuffers for display
+# setup the images in framebuffers for display
 
 picoroids = framebuf.FrameBuffer(splash, 128, 64, framebuf.MONO_HLSB)
 go = framebuf.FrameBuffer(gameover, 128, 64, framebuf.MONO_HLSB)
-
+a8  = framebuf.FrameBuffer(astro8, 8, 8, framebuf.MONO_HLSB)
+a6  = framebuf.FrameBuffer(astro6, 8, 8, framebuf.MONO_HLSB)
+a4  = framebuf.FrameBuffer(astro4, 8, 8, framebuf.MONO_HLSB)
+alf  = framebuf.FrameBuffer(alien, 16, 8, framebuf.MONO_HLSB)
 
 
 # function to input a name for the high score board. Max 8 characters.
@@ -400,24 +439,29 @@ def collision():
 
         if check_ship(xx,yy):
             collision =1
+            break
       
       # check for collisions on wraparound screen if needed
         if FAST_MODE== False:
             if xx<0 :
                 if check_ship(xx+128,yy):
                     collision =1
+                    break
             
             if yy<0 :
                 if check_ship(xx,yy+64):
                     collision =1
+                    break
             
             if xx>127:
                 if check_ship(xx-128,yy):
                     collision =1
+                    break
             
             if yy>63:
                 if check_ship(xx,yy-64):
                     collision =1
+                    break
 
 
 # let's be clever, we need to draw asteroids first, then the ship, then bullets, then the text so that collisions are
@@ -438,6 +482,19 @@ def fire():
     bullets.append(bullet_age)   # bullet age
     bullets.append(rotate_x(0,bullet_speed,rotation))    # to be added onto x,y every frame.
     bullets.append(rotate_y(0,bullet_speed,rotation))
+
+def fire_alien():
+    AUTOPLAY_MODE=False    # firing, so not in demo mode anymore!
+    a = random.randrange(10)/50
+    # alien fires randomly
+
+    bullets.append(alien_x+(1*rotate_x(0,bullet_speed,a+(rotation*-1))))
+    bullets.append(alien_y+(1*rotate_y(0,bullet_speed,a+(rotation*-1))))
+    bullets.append(bullet_age)   # bullet age
+    bullets.append(rotate_x(0,bullet_speed,a+(rotation*-1)))    # to be added onto x,y every frame.
+    bullets.append(rotate_y(0,bullet_speed,a+(rotation*-1)))
+
+    
 
 
 # add a new asteroid to the field
@@ -501,7 +558,7 @@ level =1
 bullet_speed = 4
 bullet_age = 20  # how long a bullet lasts
 
-
+framedelay =.01   # each frame is too fast! slow it down
 
 
 # main game loop
@@ -583,10 +640,7 @@ while True:
     ship_y = 32
     rotation = 3.14
 
-    # asteroids vector descriptions
-    asteroid_1 = (-2,6,3,5,5,0,-1,-3,-3,-2,-2,6)
-    asteroid_2 = (-2,4,2,3,4,0,-1,-2,-3,-2,-2,4)
-    asteroid_3 = (-2,3,2,3,3,0,-1,-2,-2,-2,-1,2)
+    
 
     asteroid_1_x =30
     asteroid_1_y = 30
@@ -620,9 +674,22 @@ while True:
     # asteroid   type  x    y  x_speed    y_speed  rotation
     #asteroids=[1,20,10,(random.randrange(0,6)-3)/5,(random.randrange(0,6)-3)/5,-.002,1,100,10,(random.randrange(0,6)-3)/5,(random.randrange(0,6)-3)/5,-.002]
     asteroids=[]
-    new_asteroid()
-    new_asteroid()
+
+    for t in range(2):          # default 2
+        new_asteroid()
+    
  
+
+    alien_x =random.randrange(0,127)
+    alien_y =random.randrange(0,63)
+    alien_xx = ((random.randrange(0,100)-50)/50)     # twice horizontal speed
+    alien_yy = ((random.randrange(0,100)-50)/100) 
+     
+
+    alien_ON = False
+    acountdown =0     # countdown for alien to not remove too early
+
+
 
 
     oled.fill(0)
@@ -671,18 +738,6 @@ while True:
     # draw asteroids
 
 
-        asteroid_1_rot += 0.05
-        asteroid_1_x += 0.6
-        asteroid_1_y += 0.35
-
-        if asteroid_1_y > 64:
-            asteroid_1_y =asteroid_1_y-64
-        if asteroid_1_y < 0:
-            asteroid_1_y = asteroid_1_y+64
-        if asteroid_1_x > 128:
-            asteroid_1_x = asteroid_1_x-128
-        if asteroid_1_x <0:
-            asteroid_1_x = asteroid_1_x + 128
 
         if len(asteroids)>5:  # if there are asteroids to show....
             for i in range(0,len(asteroids)/6):
@@ -692,7 +747,7 @@ while True:
                 inc_x = asteroids[(i*6)+3]
                 inc_y = asteroids[(i*6)+4]
                 asteroid_1_rot = asteroids[(i*6)+5]
-                if i % 2:
+                if i % 2:   # use modulus to determine if rock rotates clockwise or not
                     asteroids[(i*6)+5] += 0.05
                 else:
                     asteroids[(i*6)+5] -= 0.05
@@ -708,71 +763,28 @@ while True:
                 asteroids[(i*6)+2] += inc_y
 
                 if asteroids[(i*6)+2] > 64:
-                    asteroids[(i*6)+2] =asteroids[(i*6)+2]-64
+                    asteroids[(i*6)+2] -=64
                 if asteroids[(i*6)+2] < 0:
-                    asteroids[(i*6)+2] = asteroids[(i*6)+2]+64
+                    asteroids[(i*6)+2] += 64
                 if  asteroids[(i*6)+1] > 128:
-                    asteroids[(i*6)+1] =  asteroids[(i*6)+1]-128
+                    asteroids[(i*6)+1] -=  128
                 if  asteroids[(i*6)+1] <0:
-                    asteroids[(i*6)+1] =  asteroids[(i*6)+1] + 128
+                    asteroids[(i*6)+1] += 128
+
+
+                # blit asteroids onto screen
+
+                if asteroids[(i*6)] ==1:
+                    oled.blit(a8,int(asteroids[(i*6)+1])-4,int(asteroids[(i*6)+2])-4,0)
+                if asteroids[(i*6)] ==2:
+                    oled.blit(a6,int(asteroids[(i*6)+1])-3,int(asteroids[(i*6)+2])-3,0)
+                if asteroids[(i*6)] ==3:
+                    oled.blit(a4,int(asteroids[(i*6)+1])-2,int(asteroids[(i*6)+2])-2,0)
 
 
 
-                for u in range(0,10,2):
-                    if asteroids[(i*6)] ==1:
-                        xx=int(asteroid_1_x)+int(rotate_x(asteroid_1[u],asteroid_1[u+1],asteroid_1_rot))
-                        yy= int(asteroid_1_y)+int(rotate_y(asteroid_1[u],asteroid_1[u+1],asteroid_1_rot))
-                        xxx=int(asteroid_1_x)+int(rotate_x(asteroid_1[u+2],asteroid_1[u+3],asteroid_1_rot))
-                        yyy= int(asteroid_1_y)+int(rotate_y(asteroid_1[u+2],asteroid_1[u+3],asteroid_1_rot) )
-
-                        oled.line(xx, yy,  xxx,yyy ,1)
-
-                        if FAST_MODE== False:
-                            if (xx<0) or (xxx<0):
-                                oled.line(xx+128, yy,  xxx+128,yyy ,1)
-                            if (yy<0) or (yyy<0):
-                                oled.line(xx, yy+64,  xxx,yyy +64,1)
-                            if (xx>127) or (xxx>127):
-                                oled.line(xx-128, yy,  xxx-128,yyy ,1)
-                            if (yy>63) or (yyy>63):
-                                oled.line(xx, yy-64,  xxx,yyy-64 ,1)
-                        
-                   
-                    if asteroids[(i*6)] ==2:
-                        xx=int(asteroid_1_x)+int(rotate_x(asteroid_2[u],asteroid_2[u+1],asteroid_1_rot))
-                        yy= int(asteroid_1_y)+int(rotate_y(asteroid_2[u],asteroid_2[u+1],asteroid_1_rot))
-                        xxx=int(asteroid_1_x)+int(rotate_x(asteroid_2[u+2],asteroid_2[u+3],asteroid_1_rot))
-                        yyy= int(asteroid_1_y)+int(rotate_y(asteroid_2[u+2],asteroid_2[u+3],asteroid_1_rot) )
-
-                        oled.line(xx, yy,  xxx,yyy ,1)
-                        if FAST_MODE== False:
-                            if (xx<0) or (xxx<0):
-                                oled.line(xx+128, yy,  xxx+128,yyy ,1)
-                            if (yy<0) or (yyy<0):
-                                oled.line(xx, yy+64,  xxx,yyy +64,1)
-                            if (xx>127) or (xxx>127):
-                                oled.line(xx-128, yy,  xxx-128,yyy ,1)
-                            if (yy>63) or (yyy>63):
-                                oled.line(xx, yy-64,  xxx,yyy-64 ,1)
-
-                    if asteroids[(i*6)] ==3:
-                        xx=int(asteroid_1_x)+int(rotate_x(asteroid_3[u],asteroid_3[u+1],asteroid_1_rot))
-                        yy= int(asteroid_1_y)+int(rotate_y(asteroid_3[u],asteroid_3[u+1],asteroid_1_rot))
-                        xxx=int(asteroid_1_x)+int(rotate_x(asteroid_3[u+2],asteroid_3[u+3],asteroid_1_rot))
-                        yyy= int(asteroid_1_y)+int(rotate_y(asteroid_3[u+2],asteroid_3[u+3],asteroid_1_rot) )
-
-                        oled.line(xx, yy,  xxx,yyy ,1)
-                        if FAST_MODE== False:
-                            if (xx<0) or (xxx<0):
-                                oled.line(xx+128, yy,  xxx+128,yyy ,1)
-                            if (yy<0) or (yyy<0):
-                                oled.line(xx, yy+64,  xxx,yyy +64,1)
-                            if (xx>127) or (xxx>127):
-                                oled.line(xx-128, yy,  xxx-128,yyy ,1)
-                            if (yy>63) or (yyy>63):
-                                oled.line(xx, yy-64,  xxx,yyy-64 ,1)
-                    
-    # end asteroids
+               
+        # end asteroids
 
 
 
@@ -780,12 +792,72 @@ while True:
 
 
 
+        # draw alien
+
+        if alien_ON == True:
+
+            oled.blit(alf,int(alien_x)-8,int(alien_y)-4,0)
+            if alien_x<8:
+                oled.blit(alf,int(alien_x)+128-8,int(alien_y)-4,0)
+            if alien_y<8:
+                oled.blit(alf,int(alien_x)-8,int(alien_y)+64-4,0)
+            if alien_x>120:
+                oled.blit(alf,int(alien_x)-128-8,int(alien_y)-4,0)
+            if alien_y>55:
+                oled.blit(alf,int(alien_x)-8,int(alien_y)-64-4,0)
+
+
+            if random.randrange(0,int(80-(level*5)))==5:     # fire more at higher levels
+                fire_alien()
+
+        # alien movement
+        alien_x += alien_xx
+        alien_y += alien_yy
+
+        if alien_y > 63:
+            alien_y = alien_y-64
+        if alien_y < 0:
+            alien_y = alien_y+64
+        if alien_x > 127:
+            alien_x = alien_x-128
+        if alien_x <0:
+            alien_x = alien_x + 128
+
+        if random.randrange(0,100)==5:
+            alien_xx = ((random.randrange(0,100)-50)/50)     # twice horizontal speed
+            alien_yy = ((random.randrange(0,100)-50)/100) 
+        acountdown-=1
+        if acountdown<0:
+            acountdown=0
+        if level>2:    # alien only exists on level 3 plus
+            if random.randrange(0,200)==5 and acountdown==0:
+                if alien_ON==False:
+                    alien_ON = True
+                    acountdown = 300
+                else:
+                     alien_ON = False
+                
+                # if attempt to show alien is too close to ship, deny it
+                if abs(alien_x-ship_x)<20 and abs(alien_y-ship_y):
+                    alien_ON=False
 
 
 
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+        time.sleep(framedelay)
 
 
 
@@ -886,11 +958,11 @@ while True:
 
         # move ship across boundaries for infite play
 
-        if ship_y > 64:
+        if ship_y > 63:
             ship_y = ship_y-64
         if ship_y < 0:
             ship_y = ship_y+64
-        if ship_x > 128:
+        if ship_x > 127:
             ship_x = ship_x-128
         if ship_x <0:
             ship_x = ship_x + 128
@@ -980,6 +1052,19 @@ while True:
                 oled.pixel(bullet_x,bullet_y,1)
 
 
+                # check for alien collision
+                if  alien_ON == True:
+                    alien_dist_x = abs(bullet_x-alien_x)
+                    alien_dist_y = abs(bullet_y-alien_y)
+                    if alien_dist_x<10 and alien_dist_y<10:
+                        alien_ON = False
+                        score+=50
+
+
+
+
+
+
                 # check for collision with rocks - collsion is based on distance to origin
                 if len(asteroids)>5:  # if there are asteroids to show....
                     break_a =-1
@@ -988,23 +1073,23 @@ while True:
                         asteroid_1_y = asteroids[(i*6)+2]
                         asteroid_type = asteroids[(i*6)]
 
-                        x_dist = bullet_x-asteroid_1_x
-                        y_dist = bullet_y-asteroid_1_y
+                        x_dist = abs(bullet_x-asteroid_1_x)
+                        y_dist = abs(bullet_y-asteroid_1_y)
                         
-                        if x_dist <0:
-                            x_dist = x_dist *-1
-                        if y_dist <0:
-                            y_dist = y_dist *-1
+                       
+
 
                         if x_dist<(9/asteroid_type) and y_dist <(9/asteroid_type):   # harder to hit smaller rocks
                       
                             bullets[(b*5)+2] = 0  # reduce age to 0
                             break_a =i
-                            break
+                            break_asteroid(break_a)
+                            score += int(5 *asteroid_type)   # smaller = more points
+                            break        # get out of for asteroids loop
                     
-                    if break_a>=0:
-                        break_asteroid(break_a)
-                        score += 10
+
+
+
         if len(bullets)>4:
             for b in range(int((len(bullets)/5))):
 
@@ -1015,7 +1100,7 @@ while True:
                
                     for a in range(0,5):
                         bullets.pop(int((b*5)))   # remove 
-                    b=100  # exit loop
+                break  # only remove 1 per frame
 
     # bullets over
 
@@ -1085,6 +1170,14 @@ while True:
                 bullet_age =5
 
             slowdown = slowdown * 0.75   # reduce ability to slowdown ship, slides more = harder
+
+            framedelay -= 0.001
+
+            if framedelay<0:
+                framedelay=0
+
+
+
             asteroids=[] # reset asteroids list
             bullets=[]
 

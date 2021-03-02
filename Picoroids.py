@@ -14,7 +14,7 @@
 #  ╢,,g▌
 #   `` 
 # 
-# Picoroids
+# Picoroids v1.0
 # 
 # by Andy Crook Feb 2021
 #
@@ -37,6 +37,7 @@
 
 from machine import Pin, I2C
 from ssd1306 import SSD1306_I2C
+from sh1106 import SH1106_I2C
 import machine
 import framebuf
 import random
@@ -53,8 +54,14 @@ print("I2C Address      : "+hex(i2c.scan()[0]).upper()) # Display device address
 print("I2C Configuration: "+str(i2c))                   # Display I2C config
 
 
-oled = SSD1306_I2C(WIDTH, HEIGHT, i2c)                  # Init oled display
+# CHOOSE YOUR SCREEN
 
+# SH1106
+oled = SH1106_I2C(WIDTH, HEIGHT, i2c)                  # Init oled display
+oled.rotate(True)
+
+# SSD1306
+#oled = SSD1306_I2C(WIDTH, HEIGHT, i2c)                  # Init oled display
 
 # setup buttons on these physical pins
 
